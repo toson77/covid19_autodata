@@ -28,6 +28,13 @@ function getData(id, sheetName) {
     var PatientsSummaryJson = {"date": "", "data": rows};
     return PatientsSummaryJson;
   }
+  else if( sheetName === "検査実施数(inspections_summary)"){
+     /**検査実施数データ整形*/
+    formatInspectionsSummary(rows);
+    /**検査実施数Json雛形*/
+    var InspectionsSummaryJson = {"date": "", "data": rows};
+    return InspectionsSummaryJson;
+  }
   
   /**object作成*/
   function ArrayToJson(array, keys){
@@ -35,13 +42,10 @@ function getData(id, sheetName) {
     var obj = {}
     row.map(function(item, index) {
       obj[keys[index]] = item;
-    });
-    
+    });    
     return obj;
-  });
-  
-  }  
-  
+  });  
+  }    
 }
 
 /**電話相談件数データ整形*/
@@ -71,13 +75,13 @@ function formatPatients (data){
   /**3行目まで削除*/
   data.splice(0, 3)[0];
   
-  return data.map( function(value){
-    if(value === "NaN-aN-aN"){
-     return value = "";
-    }
-  });
+//  return data.map( function(value){
+//    if(value === "NaN-aN-aN"){
+//     return value = "";
+//    }
+//  });
   
-  //return data;  
+  return data;  
 }
 
 /**感染者数データ整形*/
@@ -90,6 +94,20 @@ function formatPatientsSummary (data){
   }
   /**3行目まで削除*/
   data.splice(0, 3)[0];
+  
+  return data;  
+}
+
+/**検査実施数データ整形*/
+function formatInspectionsSummary (data){
+  /**1列2列3列取得**/
+  for(var i=0; i<data.length; i++){
+    data[i] = data[i].splice(0,3);
+    /**日付切り出し**/
+    data[i][0] = formatDate(new Date(data[i][0]), 'yyyy-MM-dd');
+  }
+  /**4行目まで削除*/
+  data.splice(0, 4)[0];
   
   return data;  
 }
@@ -117,8 +135,8 @@ function doGet(request) {
   var contacts = getData('1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw', '電話相談件数(contacts)');
   var patients = getData('1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw', '陽性患者属性(patients)');
   var patients_summary = getData('1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw', '陽性患者数(patients_summary)');
-  var data4 = getData('1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw', '検査実施数(inspections_summary)');
-  var data = {contacts, patients, patients_summary};
+  var inspections_summary = getData('1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw', '検査実施数(inspections_summary)');
+  var data = {contacts, patients, patients_summary, inspections_summary};
   //return ContentService.createTextOutput(func + '(' + JSON.stringify(data, null, 2) + ')')
   //.setMimeType(ContentService.MimeType.JAVASCRIPT);
   //return ContentService.createTextOutput(JSON.stringify(data3)).setMimeType(ContentService.MimeType.JSON);
