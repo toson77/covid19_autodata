@@ -2,21 +2,23 @@ function getData(id, sheetName) {
   var sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName);
   var rows = sheet.getDataRange().getValues();
   
-  //var keys = ["patients_summary",];
-
+  
   /**感染者数データ整形*/
   formatPatientsSummary(rows);
   
+  //  return rows.map(function(row) {
+  //    var obj = {}
+  //    row.map(function(item, index) {
+  //      obj[keys[index]] = item;
+  //    });
+  //    
+  //    return obj;
+  //  });
   
-//  return rows.map(function(row) {
-//    var obj = {}
-//    row.map(function(item, index) {
-//      obj[keys[index]] = item;
-//    });
-//    
-//    return obj;
-//  });
-  return rows;
+  
+  /**感染者数Json雛形*/
+  var PatientsSummaryJson = {"patients_summary": "", "date": "", "data": rows};
+  return PatientsSummaryJson;
 }
 
 /**感染者数データ整形*/
