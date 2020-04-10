@@ -1,22 +1,12 @@
 function getData(id, sheetName) {
   var sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName);
   var rows = sheet.getDataRange().getValues();
-  //var keys = rows.splice(0, 1)[0];
-  // 3行目の1次配列
-//  var keys = rows [2];
-//  keys = keys.splice(0, 2);
   
+  //var keys = ["patients_summary",];
 
+  /**感染者数データ整形*/
+  formatPatientsSummary(rows);
   
-  //1列2列以外削除
-  for(var i=0; i<rows.length; i++){
-      rows[i] = rows[i].splice(0,2);
-      //日付切り出し
-      //rows[i][0] = rows[i][0].substr(0, 10);
-      rows[i][0] = formatDate(new Date(rows[i][0]), 'yyyy-MM-dd');
-  }
-  //3行目まで削除
-  rows.splice(0, 3)[0];
   
 //  return rows.map(function(row) {
 //    var obj = {}
@@ -29,8 +19,23 @@ function getData(id, sheetName) {
   return rows;
 }
 
-// date: 日付オブジェクト
-// format: 書式フォーマット
+/**感染者数データ整形*/
+function formatPatientsSummary (data){
+   /**1列2列以外削除**/
+  for(var i=0; i<data.length; i++){
+      data[i] = data[i].splice(0,2);
+      /**日付切り出し**/
+      data[i][0] = formatDate(new Date(data[i][0]), 'yyyy-MM-dd');
+  }
+  /**3行目まで削除*/
+  data.splice(0, 3)[0];
+  
+  return data;
+  
+}
+
+/** date: 日付オブジェクト
+ format: 書式フォーマット*/
 function formatDate (date, format) {
   
   format = format.replace(/yyyy/g, date.getFullYear());
@@ -50,6 +55,6 @@ function doGet(request) {
   var data = getData('1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw', '陽性患者数(patients_summary)');
   //return ContentService.createTextOutput(func + '(' + JSON.stringify(data, null, 2) + ')')
   //.setMimeType(ContentService.MimeType.JAVASCRIPT);
-  return ContentService.createTextOutput(JSON.stringify(data));
+  return ContentService.createTextOutput(JSON.stringify(data)).setMimeType(ContentService.MimeType.JSON);
   //return ContentService.createTextOutput(data);
 }
