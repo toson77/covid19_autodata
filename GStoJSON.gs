@@ -1,38 +1,47 @@
+
 function getData(id, sheetName) {
   var sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName);
   var rows = sheet.getDataRange().getValues();
   
+  if(sheetName === "電話相談件数(contacts)"){
+    /**電話相談件数データ整形*/
+    formatContacts(rows);   
+    /**電話相談件数数Json雛形*/
+    var ContactsJson = {"contacts": "", "date": "", "data": rows};
+    return ContactsJson;
+  } 
+  else if( sheetName === "陽性患者属性(patients)"){
+    /**陽性患者属性データ整形*/
+    formatPatients(rows);
+    /**object作成用key作成*/
+    const key = ["リリース日", "居住地", "年代", "性別", "退院"];
+    /**object作成*/
+    rows = ArrayToJson(rows, key);
+    /**陽性患者属性Json雛形*/
+    var PatientsJson = {"patients": "", "date": "", "data": rows};
+    return PatientsJson;
+  }
+  else if( sheetName === "陽性患者数(patients_summary)"){
+    /**感染者数データ整形*/
+    formatPatientsSummary(rows);
+    /**感染者数Json雛形*/
+    var PatientsSummaryJson = {"patients_summary": "", "date": "", "data": rows};
+    return PatientsSummaryJson;
+  }
   
-  /**感染者数データ整形*/
-  //formatPatientsSummary(rows);
-  /**電話相談件数データ整形*/
-  //formatContacts(rows);
-  /**陽性患者属性データ整形*/
-  formatPatients(rows);
+  function ArrayToJson(array, keys){
+  return array.map(function(row) {
+    var obj = {}
+    row.map(function(item, index) {
+      obj[keys[index]] = item;
+    });
+    
+    return obj;
+  });
   
+  }  
   
-  //  return rows.map(function(row) {
-  //    var obj = {}
-  //    row.map(function(item, index) {
-  //      obj[keys[index]] = item;
-  //    });
-  //    
-  //    return obj;
-  //  });
-  
-  /**電話相談件数数Json雛形*/
-  var ContactsJson = {"contacts": "", "date": "", "data": rows};
-  return ContactsJson;
-  
-   /**陽性患者属性Json雛形*/
-  var PatientsJson = {"patients": "", "date": "", "data": rows};
-  return ContactsJson;
-  
-  /**感染者数Json雛形*/
-//  var PatientsSummaryJson = {"patients_summary": "", "date": "", "data": rows};
-//  return PatientsSummaryJson;
 }
-
 
 /**電話相談件数データ整形*/
 function formatContacts (data){
@@ -111,6 +120,8 @@ function doGet(request) {
   //return ContentService.createTextOutput(func + '(' + JSON.stringify(data, null, 2) + ')')
   //.setMimeType(ContentService.MimeType.JAVASCRIPT);
   //return ContentService.createTextOutput(JSON.stringify(data3)).setMimeType(ContentService.MimeType.JSON);
-  return ContentService.createTextOutput(JSON.stringify(data2)).setMimeType(ContentService.MimeType.JSON);
+  return ContentService.createTextOutput(func + '(' + JSON.stringify(data2, null, 2) + ')').setMimeType(ContentService.MimeType.JSON);
   //return ContentService.createTextOutput(data2);
 }
+
+
