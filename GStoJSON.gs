@@ -1,3 +1,11 @@
+/**グローバル変数(main_summaryで使用)*/
+var numInspections = 0;
+var numPatients = 0;
+var numInHospital = 0;
+/**死者数と重篤者は変わったらここ書き換え*/
+const numDeath = 0;
+const numSerious = 0;
+
 function getData(id, sheetName) {
   const sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName)
   let rows = sheet.getDataRange().getValues()
@@ -6,7 +14,7 @@ function getData(id, sheetName) {
     /** 電話相談件数データ整形 */
     formatContacts(rows)
     /** 電話相談件数数オブジェクト雛形 */
-    const ContactsObject = { date: '', data: rows }
+    const ContactsObject = { date: Utilities.formatDate(new Date(), 'JST', 'yyyy\/MM\/dd HH:mm'), data: rows }
     return ContactsObject
   } else if (sheetName === '陽性患者属性(patients)') {
     /** 陽性患者属性データ整形 */
@@ -81,6 +89,8 @@ function formatPatients(data) {
       array[index] = checkNul(str)
     })
   })
+  /** 入院者数合計 */
+  numPatients = sumColumn(data, 1);
   return data
 }
 
@@ -100,6 +110,8 @@ function formatPatientsSummary(data) {
       array[index] = checkNul(str)
     })
   })
+  /** 感染者数合計 */
+  numPatients = sumColumn(data, 1);
 
   return data
 }
@@ -120,8 +132,19 @@ function formatInspectionsSummary(data) {
       array[index] = checkNul(str)
     })
   })
+  /**検査実施数合計*/
+  numInspections = sumColumn(data, 1) + sumColumn(data, 2);
 
   return data
+}
+
+/**index列の合計をreturn*/
+function sumColumn(data, index){
+  var sum = 0;
+  for (let i = 0; i < data.length; i++) {
+    sum += data[i][index];
+  }
+  return sum;
 }
 
 /** date型空文字判定 */
@@ -169,6 +192,44 @@ function formatDate(date, format) {
   return format
 }
 
+function mainSummaryObj(){
+  const mainSummaryObject = {"attr": "検査実施人数",
+        "value": numInspections,
+        "children": [
+            {
+                "attr": "陽性患者数",
+                "value": numPatients,
+                "children": [
+                    {
+                        "attr": "入院中",
+                        "value": numInHospital,
+                        "children": [
+                            {
+                                "attr": "軽症・中等症",
+                                "value": numInHospital - numSerious
+                            },
+                            {
+                                "attr": "重症",
+                                "value": numSerious
+                            }
+                        ]
+                    },
+                    {
+                        "attr": "退院",
+                        "value": 5
+                    },
+                    {
+                        "attr": "死亡",
+                        "value": numDeath
+                    }
+                ]
+            }
+        ]
+                            };
+  return mainSummaryObject;
+
+}
+
 function doGet(request) {
   const contacts = getData(
     '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
@@ -178,7 +239,8 @@ function doGet(request) {
     '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
     '陽性患者属性(patients)'
   )
-  const patients_summary = getData(
+  /**jsonの関係上スネークケースを使用*/
+  const patients_sumary = getData(
     '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
     '陽性患者数(patients_summary)'
   )
@@ -186,7 +248,8 @@ function doGet(request) {
     '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
     '検査実施数(inspections_summary)'
   )
-  const data = { contacts, patients, patients_summary, inspections_summary }
+  const main_summary = mainSummaryObj();
+  const data = { contacts, patients, patients_sumary, inspections_summary, main_summary }
   return ContentService.createTextOutput(
     JSON.stringify(data, null, 2)
   ).setMimeType(ContentService.MimeType.JSON)
