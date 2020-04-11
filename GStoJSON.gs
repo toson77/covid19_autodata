@@ -1,7 +1,7 @@
 /**グローバル変数(main_summaryで使用)*/
 var numInspections = 0;
 var numPatients = 0;
-var numInHospital = 0;
+var numOutHospital = 0;
 /**死者数と重篤者は変わったらここ書き換え*/
 const numDeath = 0;
 const numSerious = 0;
@@ -89,8 +89,8 @@ function formatPatients(data) {
       array[index] = checkNul(str)
     })
   })
-  /** 入院者数合計 */
-  numPatients = sumColumn(data, 1);
+  /** 退院者数合計(77行目で2345列取得してることに注意)*/
+  numOutHospital = notNullLength(data, 4);
   return data
 }
 
@@ -138,15 +138,24 @@ function formatInspectionsSummary(data) {
   return data
 }
 
-/**index列の合計をreturn*/
-function sumColumn(data, index){
+/**colの合計をreturn*/
+function sumColumn(data, col){
   var sum = 0;
-  for (let i = 0; i < data.length; i++) {
-    sum += data[i][index];
+  for (let row = 0; row < data.length; row++) {
+    sum += data[row][col];
   }
   return sum;
 }
-
+/**nullを含まない配列の要素数*/
+function notNullLength(data, col){
+  var sum = 0;
+  for (let row = 0; row < data.length; row++) {
+    if (checkNul(data[row][col])){
+      sum++;
+    }
+  }
+  return sum;
+}
 /** date型空文字判定 */
 function convertToDate(val) {
   if (val) {
@@ -202,11 +211,11 @@ function mainSummaryObj(){
                 "children": [
                     {
                         "attr": "入院中",
-                        "value": numInHospital,
+                        "value": numPatients - numOutHospital,
                         "children": [
                             {
                                 "attr": "軽症・中等症",
-                                "value": numInHospital - numSerious
+                                "value": numPatients - numOutHospital - numSerious
                             },
                             {
                                 "attr": "重症",
@@ -216,7 +225,7 @@ function mainSummaryObj(){
                     },
                     {
                         "attr": "退院",
-                        "value": 5
+                        "value": numOutHospital
                     },
                     {
                         "attr": "死亡",
