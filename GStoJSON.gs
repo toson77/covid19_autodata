@@ -54,10 +54,16 @@ function formatContacts (data){
   for(var i=0; i<data.length; i++){
     data[i] = data[i].splice(0,2);
     /**日付切り出し**/
-    data[i][0] = formatDate(new Date(data[i][0]), 'yyyy-MM-dd');
+    data[i][0] = formatDate(convertToDate(data[i][0]), 'yyyy-MM-dd');
   }
   /**4行目まで削除*/
   data.splice(0, 4)[0];
+   /**空文字null代入*/
+  data.map(function(str){
+  str.map(function(str, index, array){
+    array[index] = checkNul(str);
+  });
+  });
   
   return data;  
 }
@@ -68,12 +74,19 @@ function formatPatients (data){
   for(var i=0; i<data.length; i++){
     data[i] = data[i].splice(1,5);
     /**日付切り出し**/
-    data[i][0] = formatDate(new Date(data[i][0]), 'yyyy-MM-dd');
-    data[i][4] = formatDate(new Date(data[i][4]), 'yyyy-MM-dd');
+    data[i][0] = formatDate(convertToDate(data[i][0]), 'yyyy-MM-dd');
+    data[i][4] = formatDate(convertToDate(data[i][4]), 'yyyy-MM-dd');
    
   }
   /**3行目まで削除*/
   data.splice(0, 3)[0];
+  /**空文字null代入*/
+  data.map(function(str){
+  str.map(function(str, index, array){
+    array[index] = checkNul(str);
+  });
+    
+});
   return data;  
 }
 
@@ -83,10 +96,16 @@ function formatPatientsSummary (data){
   for(var i=0; i<data.length; i++){
     data[i] = data[i].splice(0,2);
     /**日付切り出し**/
-    data[i][0] = formatDate(new Date(data[i][0]), 'yyyy-MM-dd');
+    data[i][0] = formatDate(convertToDate(data[i][0]), 'yyyy-MM-dd');
   }
   /**3行目まで削除*/
   data.splice(0, 3)[0];
+   /**空文字null代入*/
+  data.map(function(str){
+  str.map(function(str, index, array){
+    array[index] = checkNul(str);
+  });
+  });
   
   return data;  
 }
@@ -97,20 +116,56 @@ function formatInspectionsSummary (data){
   for(var i=0; i<data.length; i++){
     data[i] = data[i].splice(0,3);
     /**日付切り出し**/
-    data[i][0] = formatDate(new Date(data[i][0]), 'yyyy-MM-dd');
+    data[i][0] = formatDate(data[i][0], 'yyyy-MM-dd');
   }
   /**4行目まで削除*/
   data.splice(0, 4)[0];
+   /**空文字null代入*/
+  data.map(function(str){
+  str.map(function(str, index, array){
+    array[index] = checkNul(str);
+  });
+  });
   
   return data;  
 }
 
-/**NaN回避*/
+/**date型空文字判定*/
+function convertToDate(val) {
+  if(val){
+   return new Date(val);
+  }
+return null;
+}
+
+/**空文字判定*/
+function checkNul(val) {
+  if(val){
+   return val;
+  }else if(val === 0){
+    return val;
+  }
+return null;
+}
+
+/**objの型とtypeが一致した場合はtrue*/
+function typeEquals(type, obj) {
+  var clas = Object.prototype.toString.call(obj).slice(8, -1);
+  return clas === type;
+}
 
 
 /** date: 日付オブジェクト
  format: 書式フォーマット*/
 function formatDate (date, format) {
+  /**書式デフォ設定*/
+  if(!(format)){
+    format = 'yyyy-MM-dd';
+  }
+  /**型判定*/
+  if(!(typeEquals('Date', date))){
+    return null;
+  }
   
   format = format.replace(/yyyy/g, date.getFullYear());
   format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2));
