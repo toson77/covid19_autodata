@@ -6,17 +6,42 @@ var numOutHospital = 0;
 const numDeath = 0;
 const numSerious = 0;
 
-function getData(id, sheetName) {
-  const sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName)
-  let rows = sheet.getDataRange().getValues()
+///**時間更新*/
+//function updateTime(activeSheet){
+//  if(activeSheet === '電話相談件数(contacts)'){
+//    const contactsDate = new Date();
+//    return contactsDate;
+//  }
+//  else if(activeSheet === '陽性患者属性(patients)'){
+//    const patientsDate = new Date();
+//    return patientsDate;
+//  }
+//  else if(activeSheet === '陽性患者数(patients_summary)'){
+//    const patientsSummaryDate = new Date();
+//    return patientsSummaryDate;
+//  }
+//  else{
+//    const patientsSummaryDate = new Date();
+//    return patientsSummaryDate;
+//    
 
+function getData(id, sheetName) {
+  const sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName);
+  let rows = sheet.getDataRange().getValues();
+  var activeSheet = SpreadsheetApp.getActiveSheet();
+//  const contactsDate
+//  const patientsDate
+//  const patientsSummaryDate
+//  const inspectionSummaryDate
+//  
   if (sheetName === '電話相談件数(contacts)') {
     /** 電話相談件数データ整形 */
     formatContacts(rows)
     /** 電話相談件数数オブジェクト雛形 */
-    const ContactsObject = { date: Utilities.formatDate(new Date(), 'JST', 'yyyy\/MM\/dd HH:mm'), data: rows }
+    const ContactsObject = { date:"" , data: rows }
     return ContactsObject
-  } else if (sheetName === '陽性患者属性(patients)') {
+  } 
+  else if (sheetName === '陽性患者属性(patients)') {
     /** 陽性患者属性データ整形 */
     formatPatients(rows)
     /** object作成用key作成 */
@@ -26,13 +51,15 @@ function getData(id, sheetName) {
     /** 陽性患者属性オブジェクト雛形 */
     const PatientsObject = { date: '', data: rows }
     return PatientsObject
-  } else if (sheetName === '陽性患者数(patients_summary)') {
+  }
+  else if (sheetName === '陽性患者数(patients_summary)') {
     /** 感染者数データ整形 */
     formatPatientsSummary(rows)
     /** 感染者数オブジェクト雛形 */
     const PatientsSummaryObject = { date: '', data: rows }
     return PatientsSummaryObject
-  } else {
+  }
+  else {
     /** 検査実施数データ整形 */
     formatInspectionsSummary(rows)
     /** 検査実施数オブジェクト雛形 */
@@ -258,7 +285,8 @@ function doGet(request) {
     '検査実施数(inspections_summary)'
   )
   const main_summary = mainSummaryObj();
-  const data = { contacts, patients, patients_sumary, inspections_summary, main_summary }
+  const lastUpdate = "";
+  const data = { contacts, patients, patients_sumary, inspections_summary,lastUpdate, main_summary }
   return ContentService.createTextOutput(
     JSON.stringify(data, null, 2)
   ).setMimeType(ContentService.MimeType.JSON)
