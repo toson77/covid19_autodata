@@ -1,2 +1,2 @@
 # covid19_autodata
-spreadsheet→json→push automation　理想形...
+spreadsheet→json
