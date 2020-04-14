@@ -6,77 +6,81 @@ var numOutHospital = 0;
 const numDeath = 0;
 const numSerious = 0;
 
-///**時間更新*/
-//function updateTime(activeSheet){
-//  if(activeSheet === '電話相談件数(contacts)'){
-//    const contactsDate = new Date();
-//    return contactsDate;
-//  }
-//  else if(activeSheet === '陽性患者属性(patients)'){
-//    const patientsDate = new Date();
-//    return patientsDate;
-//  }
-//  else if(activeSheet === '陽性患者数(patients_summary)'){
-//    const patientsSummaryDate = new Date();
-//    return patientsSummaryDate;
-//  }
-//  else{
-//    const patientsSummaryDate = new Date();
-//    return patientsSummaryDate;
-//    
-
 function getData(id, sheetName) {
-  const sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName);
-  let rows = sheet.getDataRange().getValues();
-  var activeSheet = SpreadsheetApp.getActiveSheet();
-//  const contactsDate
-//  const patientsDate
-//  const patientsSummaryDate
-//  const inspectionSummaryDate
-//  
+  const sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName)
+  let rows = sheet.getDataRange().getValues()
+
   if (sheetName === '電話相談件数(contacts)') {
     /** 電話相談件数データ整形 */
     formatContacts(rows)
     /** 電話相談件数数オブジェクト雛形 */
-    const ContactsObject = { date:"" , data: rows }
+    const ContactsObject = { date: Utilities.formatDate(new Date(), 'JST', 'yyyy\/MM\/dd HH:mm'), data: rows }
     return ContactsObject
-  } 
-  else if (sheetName === '陽性患者属性(patients)') {
+  } else if (sheetName === '陽性患者属性(patients)') {
     /** 陽性患者属性データ整形 */
     formatPatients(rows)
     /** object作成用key作成 */
     const key = ['リリース日', '居住地', '年代', '性別', '退院']
     /** object作成 */
-    rows = ArrayToObject(rows, key)
+    rows = arrayToObject(rows, key)
     /** 陽性患者属性オブジェクト雛形 */
     const PatientsObject = { date: '', data: rows }
     return PatientsObject
-  }
-  else if (sheetName === '陽性患者数(patients_summary)') {
+  } else if (sheetName === '陽性患者数(patients_summary)') {
     /** 感染者数データ整形 */
     formatPatientsSummary(rows)
     /** 感染者数オブジェクト雛形 */
     const PatientsSummaryObject = { date: '', data: rows }
     return PatientsSummaryObject
-  }
-  else {
+  } else {
     /** 検査実施数データ整形 */
     formatInspectionsSummary(rows)
     /** 検査実施数オブジェクト雛形 */
     const InspectionsSummaryObject = { date: '', data: rows }
     return InspectionsSummaryObject
   }
+}
 
-  /** object作成 */
-  function ArrayToObject(array, keys) {
-    return array.map(function(row) {
-      const obj = {}
-      row.map(function(item, index) {
-        obj[keys[index]] = item
-      })
-      return obj
+/**
+ * object作成 
+ *
+ * @params {Array} arr
+ * @params {String} keys
+ * @params {Object}
+ */
+function arrayToObject(arr, keys) {
+  return arr.map(function(row) {
+    const obj = {}
+    row.map(function(item, index) {
+      obj[keys[index]] = item
     })
+    return obj
+  })
+}
+
+/** 
+ * date型に変換 
+ * 
+ * @params {any} val
+ * @returns {Date|null}
+ */
+function convertToDate(val) {
+  if (val) {
+    return new Date(val)
   }
+  return null
+}
+
+/** 
+ * 空文字判定
+ * 
+ * @params {any} val
+ */
+function checkNull(val) {
+  if (val || val === 0) {
+    return val
+  }
+  return null
 }
 
 /** 電話相談件数データ整形 */
@@ -92,11 +96,33 @@ function formatContacts(data) {
   /** 空文字null代入 */
   data.map(function(str) {
     str.map(function(str, index, array) {
-      array[index] = checkNul(str)
+      array[index] = checkNull(str)
     })
   })
 
   return data
+}
+
+/** 
+ * 日付をフォーマットする
+ *
+ * @params {Date|null} date 日付オブジェクト
+ * @parmas {String} format 書式フォーマット
+ * @returns {String}
+ */
+function formatDate(date, format = 'yyyy-MM-dd') {
+  /** 型判定 */
+  if (!isDate(date)) {
+    return null
+  }
+  format = format.replace(/yyyy/g, date.getFullYear())
+  format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2))
+  format = format.replace(/dd/g, ('0' + date.getDate()).slice(-2))
+  format = format.replace(/HH/g, ('0' + date.getHours()).slice(-2))
+  format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2))
+  format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2))
+  format = format.replace(/SSS/g, ('00' + date.getMilliseconds()).slice(-3))
+  return format
 }
 
 /** 陽性患者属性データ整形 */
@@ -113,7 +139,7 @@ function formatPatients(data) {
   /** 空文字null代入 */
   data.map(function(str) {
     str.map(function(str, index, array) {
-      array[index] = checkNul(str)
+      array[index] = checkNull(str)
     })
   })
   /** 退院者数合計(77行目で2345列取得してることに注意)*/
@@ -134,7 +160,7 @@ function formatPatientsSummary(data) {
   /** 空文字null代入 */
   data.map(function(str) {
     str.map(function(str, index, array) {
-      array[index] = checkNul(str)
+      array[index] = checkNull(str)
     })
   })
   /** 感染者数合計 */
@@ -156,7 +182,7 @@ function formatInspectionsSummary(data) {
   /** 空文字null代入 */
   data.map(function(str) {
     str.map(function(str, index, array) {
-      array[index] = checkNul(str)
+      array[index] = checkNull(str)
     })
   })
   /**検査実施数合計*/
@@ -165,7 +191,13 @@ function formatInspectionsSummary(data) {
   return data
 }
 
-/**colの合計をreturn*/
+/**
+ * colの合計
+ *
+ * @params {Array} data
+ * @parmas {Number} col
+ * @returns {Number}
+ */
 function sumColumn(data, col){
   var sum = 0;
   for (let row = 0; row < data.length; row++) {
@@ -173,120 +205,104 @@ function sumColumn(data, col){
   }
   return sum;
 }
-/**nullを含まない配列の要素数*/
+
+/**
+ * nullを含まない配列の要素数
+ *
+ * @parmas {Array} data
+ * @params {Number} col
+ * @params {Number}
+ */
 function notNullLength(data, col){
-  var sum = 0;
+  var len = 0;
   for (let row = 0; row < data.length; row++) {
-    if (checkNul(data[row][col])){
-      sum++;
+    if (checkNull(data[row][col])){
+      len++;
     }
   }
-  return sum;
-}
-/** date型空文字判定 */
-function convertToDate(val) {
-  if (val) {
-    return new Date(val)
-  }
-  return null
+  return len;
 }
 
-/** 空文字判定 */
-function checkNul(val) {
-  if (val) {
-    return val
-  } else if (val === 0) {
-    return val
-  }
-  return null
+/**
+ * Date型か
+ * 
+ * @params {any} val
+ * @returns {Boolean}
+ */
+function isDate(val) {
+  return getType(val) === 'date';
 }
 
-/** objの型とtypeが一致した場合はtrue */
-function typeEquals(type, obj) {
-  const clas = Object.prototype.toString.call(obj).slice(8, -1)
-  return clas === type
+/** 
+ * objの型とtypeが一致した場合はtrue
+ *
+ * @parmas {any} val
+ * @returns {String}
+ */
+function getType(val) {
+  return Object.prototype.toString.call(val).slice(8, -1).toLowerCase();
 }
 
-/** date: 日付オブジェクト
- format: 書式フォーマット */
-function formatDate(date, format) {
-  /** 書式デフォ設定 */
-  if (!format) {
-    format = 'yyyy-MM-dd'
-  }
-  /** 型判定 */
-  if (!typeEquals('Date', date)) {
-    return null
-  }
-  format = format.replace(/yyyy/g, date.getFullYear())
-  format = format.replace(/MM/g, ('0' + (date.getMonth() + 1)).slice(-2))
-  format = format.replace(/dd/g, ('0' + date.getDate()).slice(-2))
-  format = format.replace(/HH/g, ('0' + date.getHours()).slice(-2))
-  format = format.replace(/mm/g, ('0' + date.getMinutes()).slice(-2))
-  format = format.replace(/ss/g, ('0' + date.getSeconds()).slice(-2))
-  format = format.replace(/SSS/g, ('00' + date.getMilliseconds()).slice(-3))
-  return format
-}
+
 
 function mainSummaryObj(){
-  const mainSummaryObject = {"attr": "検査実施人数",
-        "value": numInspections,
+const mainSummaryObject = {
+    "attr": "検査実施人数",
+    "value": numInspections,
+    "children": [
+      {
+        "attr": "陽性患者数",
+        "value": numPatients,
         "children": [
-            {
-                "attr": "陽性患者数",
-                "value": numPatients,
-                "children": [
-                    {
-                        "attr": "入院中",
-                        "value": numPatients - numOutHospital,
-                        "children": [
-                            {
-                                "attr": "軽症・中等症",
-                                "value": numPatients - numOutHospital - numSerious
-                            },
-                            {
-                                "attr": "重症",
-                                "value": numSerious
-                            }
-                        ]
-                    },
-                    {
-                        "attr": "退院",
-                        "value": numOutHospital
-                    },
-                    {
-                        "attr": "死亡",
-                        "value": numDeath
-                    }
-                ]
-            }
-        ]
-                            };
-  return mainSummaryObject;
-
+           {
+            "attr": "入院中",
+            "value": numPatients - numOutHospital,
+            "children": [
+              {
+               "attr": "軽症・中等症",
+               "value": numPatients - numOutHospital - numSerious
+              },
+              {
+                "attr": "重症",
+                "value": numSerious
+              }
+           ]
+        },
+        {
+          "attr": "退院",
+          "value": numOutHospital
+        },
+        {
+          "attr": "死亡",
+          "value": numDeath
+        }
+      ]
+    }
+  ]
+};
+return mainSummaryObject;
 }
 
 function doGet(request) {
   const contacts = getData(
-    '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
+    '1a6UuuqdRzI8_lhC0L2Vy7-tZyj1LXPjvk3yBr0l_aO4',
     '電話相談件数(contacts)'
   )
   const patients = getData(
-    '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
+    '1a6UuuqdRzI8_lhC0L2Vy7-tZyj1LXPjvk3yBr0l_aO4',
     '陽性患者属性(patients)'
   )
   /**jsonの関係上スネークケースを使用*/
   const patients_sumary = getData(
-    '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
+    '1a6UuuqdRzI8_lhC0L2Vy7-tZyj1LXPjvk3yBr0l_aO4',
     '陽性患者数(patients_summary)'
   )
   const inspections_summary = getData(
-    '1vakG9kP7HlhKnj_pFY7lidhaeoeRSe8TcAeNfV55nkw',
+    '1a6UuuqdRzI8_lhC0L2Vy7-tZyj1LXPjvk3yBr0l_aO4',
     '検査実施数(inspections_summary)'
   )
   const main_summary = mainSummaryObj();
-  const lastUpdate = "";
-  const data = { contacts, patients, patients_sumary, inspections_summary,lastUpdate, main_summary }
+  const data = { contacts, patients, patients_sumary, inspections_summary, main_summary }
   return ContentService.createTextOutput(
     JSON.stringify(data, null, 2)
   ).setMimeType(ContentService.MimeType.JSON)
